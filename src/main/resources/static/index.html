@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Student Information System</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            margin: 0;
+            padding: 30px 15px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: auto;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px #0001;
+        }
+
+        h2 { text-align: center; color: #173b72; }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 11px;
+            margin-top: 6px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 22px;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            background: #2563eb;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #message { margin-top: 15px; }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <h2>Student Registration</h2>
+
+    <form id="studentForm">
+        <label for="rollNumber">Roll Number</label>
+        <input id="rollNumber" required maxlength="30">
+
+        <label for="studentName">Student Name</label>
+        <input id="studentName" required maxlength="100">
+
+        <label for="email">Email</label>
+        <input id="email" type="email" required maxlength="150">
+
+        <label for="department">Department</label>
+        <select id="department" required>
+            <option value="">Select department</option>
+            <option value="CSE">CSE</option>
+            <option value="AIML">AIML</option>
+            <option value="IT">IT</option>
+            <option value="ECE">ECE</option>
+        </select>
+
+        <label for="marks">Marks (0–100)</label>
+        <input id="marks" type="number"
+               min="0" max="100" step="0.01" required>
+
+        <button type="submit">Insert Student</button>
+    </form>
+
+    <p id="message" role="status"></p>
+</div>
+
+<script>
+    document.getElementById("studentForm")
+        .addEventListener("submit", async function(event) {
+
+            event.preventDefault();
+
+            const student = {
+                rollNumber: document.getElementById("rollNumber").value.trim(),
+                studentName: document.getElementById("studentName").value.trim(),
+                email: document.getElementById("email").value.trim(),
+                department: document.getElementById("department").value,
+                marks: Number(document.getElementById("marks").value)
+            };
+
+            const message = document.getElementById("message");
+
+            if (student.marks < 0 || student.marks > 100) {
+                message.textContent = "Marks must be between 0 and 100.";
+                return;
+            }
+
+            try {
+                const response = await fetch("/api/students", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(student)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || "Insertion failed.");
+                }
+
+                message.textContent =
+                    "Student inserted successfully! ID: " + result.studentId;
+
+                this.reset();
+
+            } catch (error) {
+                message.textContent =
+                    "Error: " + error.message +
+                    ". Check that the Java server is running.";
+            }
+        });
+</script>
+</body>
+</html>
